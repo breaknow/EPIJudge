@@ -1,7 +1,7 @@
 #include "test_framework/generic_test.h"
 unsigned long long ReverseBits(unsigned long long x) {
 	unsigned long long ans = 0;
-	for(int i=0;i<64;i++) {
+	for (int i = 0; i < 64; i++) {
 		ans = (ans << 1) | (x & 1);
 		x >>= 1;
 	}
