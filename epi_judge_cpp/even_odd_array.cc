@@ -6,34 +6,44 @@
 using std::vector;
 
 void EvenOdd(vector<int>* A_ptr) {
-  // TODO - you fill in here.
-  return;
+	// TODO - you fill in here.
+	int odd = A_ptr->size() - 1;
+	for (int i = 0; i <= odd; i++) {
+		while (A_ptr->at(i) % 2 == 1 && i < odd) {
+			int temp = A_ptr->at(i);
+			A_ptr->at(i) = A_ptr->at(odd);
+			A_ptr->at(odd--) = temp;
+		}
+	}
+
+	return;
 }
 void EvenOddWrapper(TimedExecutor& executor, vector<int> A) {
-  std::multiset<int> before(begin(A), end(A));
+	std::multiset<int> before(begin(A), end(A));
 
-  executor.Run([&] { EvenOdd(&A); });
+	executor.Run([&] { EvenOdd(&A); });
 
-  bool in_odd = false;
-  for (int a : A) {
-    if (a % 2 == 0) {
-      if (in_odd) {
-        throw TestFailure("Even elements appear in odd part");
-      }
-    } else {
-      in_odd = true;
-    }
-  }
+	bool in_odd = false;
+	for (int a : A) {
+		if (a % 2 == 0) {
+			if (in_odd) {
+				throw TestFailure("Even elements appear in odd part");
+			}
+		}
+		else {
+			in_odd = true;
+		}
+	}
 
-  std::multiset<int> after(begin(A), end(A));
-  if (before != after) {
-    throw TestFailure("Elements mismatch");
-  }
+	std::multiset<int> after(begin(A), end(A));
+	if (before != after) {
+		throw TestFailure("Elements mismatch");
+	}
 }
 
 int main(int argc, char* argv[]) {
-  std::vector<std::string> args{argv + 1, argv + argc};
-  std::vector<std::string> param_names{"executor", "A"};
-  return GenericTestMain(args, "even_odd_array.cc", "even_odd_array.tsv",
-                         &EvenOddWrapper, DefaultComparator{}, param_names);
+	std::vector<std::string> args{ argv + 1, argv + argc };
+	std::vector<std::string> param_names{ "executor", "A" };
+	return GenericTestMain(args, "even_odd_array.cc", "even_odd_array.tsv",
+		&EvenOddWrapper, DefaultComparator{}, param_names);
 }
