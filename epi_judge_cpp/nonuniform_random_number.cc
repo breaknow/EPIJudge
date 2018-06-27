@@ -5,13 +5,27 @@
 #include "test_framework/generic_test.h"
 #include "test_framework/random_sequence_checker.h"
 #include "test_framework/timed_executor.h"
+#include <random>
 using std::abs;
 using std::bind;
 using std::unordered_map;
 using std::vector;
 int NonuniformRandomNumberGeneration(const vector<int>& values,
                                      const vector<double>& probabilities) {
-  // TODO - you fill in here.
+	vector<double> prefix_sums_of_probabilities;
+	// Creating tbe endpoints for tbe intervals corresponding to tbe
+	// probabilities .
+	partial_sum(cbegin(probabilities), cend(probabilities),
+		back_inserter(prefix_sums_of_probabilities));
+	std::default_random_engine seed((std::random_device()) ());
+	const double uniform_0_l = std::generate_canonical<double, std::numeric_limits<double>::digits>(seed);
+	// Find the index of tbe interval tbat uniform_0_l lies in , which is the
+	// return value of upper_bound() minus
+	const int interval_idx = 
+		std::distance(cbegin(prefix_sums_of_probabilities),
+			upper_bound(cbegin(prefix_sums_of_probabilities),
+				cend(prefix_sums_of_probabilities), uniform_0_l));
+	return values[interval_idx];
   return 0;
 }
 bool NonuniformRandomNumberGenerationRunner(
