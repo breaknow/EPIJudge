@@ -22,9 +22,8 @@ int NonuniformRandomNumberGeneration(const vector<int>& values,
 	// Find the index of tbe interval tbat uniform_0_l lies in , which is the
 	// return value of upper_bound() minus
 	const int interval_idx = 
-		std::distance(cbegin(prefix_sums_of_probabilities),
-			upper_bound(cbegin(prefix_sums_of_probabilities),
-				cend(prefix_sums_of_probabilities), uniform_0_l));
+		std::distance(cbegin(prefix_sums_of_probabilities), 
+			upper_bound(cbegin(prefix_sums_of_probabilities),cend(prefix_sums_of_probabilities), uniform_0_l));
 	return values[interval_idx];
   return 0;
 }
