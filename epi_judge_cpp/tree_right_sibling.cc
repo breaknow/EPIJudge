@@ -6,43 +6,54 @@
 using std::unique_ptr;
 template <typename T>
 struct BinaryTreeNode {
-  T data;
-  unique_ptr<BinaryTreeNode<T>> left, right;
-  BinaryTreeNode<T>* next = nullptr;  // Populates this field.
+	T data;
+	unique_ptr<BinaryTreeNode<T>> left, right;
+	BinaryTreeNode<T>* next = nullptr;  // Populates this field.
 
-  explicit BinaryTreeNode(T data) : data(data){};
+	explicit BinaryTreeNode(T data) : data(data) {};
 };
 
+void dfs(BinaryTreeNode<int> *node, BinaryTreeNode<int> *sib) {
+	if (sib != nullptr)
+		node->next = sib;
+	if (node->left != nullptr) { // complete binary tree
+		dfs(node->left.get(), node->right.get());
+		dfs(node->right.get(), (sib == nullptr) ? nullptr : sib->left.get());
+	}
+}
+
 void ConstructRightSibling(BinaryTreeNode<int>* tree) {
-  // TODO - you fill in here.
-  return;
+	if(tree != nullptr)
+		dfs(tree, nullptr);
+	return;
 }
 template <>
 struct SerializationTraits<unique_ptr<BinaryTreeNode<int>>>
-    : BinaryTreeSerializationTraits<unique_ptr<BinaryTreeNode<int>>, false> {};
+	: BinaryTreeSerializationTraits<unique_ptr<BinaryTreeNode<int>>, false> {
+};
 
 std::vector<std::vector<int>> ConstructRightSiblingWrapper(
-    TimedExecutor& executor, unique_ptr<BinaryTreeNode<int>>& tree) {
-  executor.Run([&] { ConstructRightSibling(tree.get()); });
+	TimedExecutor& executor, unique_ptr<BinaryTreeNode<int>>& tree) {
+	executor.Run([&] { ConstructRightSibling(tree.get()); });
 
-  std::vector<std::vector<int>> result;
-  auto level_start = tree.get();
-  while (level_start) {
-    result.emplace_back();
-    auto level_iter = level_start;
-    while (level_iter) {
-      result.back().push_back(level_iter->data);
-      level_iter = level_iter->next;
-    }
-    level_start = level_start->left.get();
-  }
-  return result;
+	std::vector<std::vector<int>> result;
+	auto level_start = tree.get();
+	while (level_start) {
+		result.emplace_back();
+		auto level_iter = level_start;
+		while (level_iter) {
+			result.back().push_back(level_iter->data);
+			level_iter = level_iter->next;
+		}
+		level_start = level_start->left.get();
+	}
+	return result;
 }
 
 int main(int argc, char* argv[]) {
-  std::vector<std::string> args{argv + 1, argv + argc};
-  std::vector<std::string> param_names{"executor", "tree"};
-  return GenericTestMain(
-      args, "tree_right_sibling.cc", "tree_right_sibling.tsv",
-      &ConstructRightSiblingWrapper, DefaultComparator{}, param_names);
+	std::vector<std::string> args{ argv + 1, argv + argc };
+	std::vector<std::string> param_names{ "executor", "tree" };
+	return GenericTestMain(
+		args, "tree_right_sibling.cc", "tree_right_sibling.tsv",
+		&ConstructRightSiblingWrapper, DefaultComparator{}, param_names);
 }
