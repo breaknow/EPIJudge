@@ -1,10 +1,12 @@
 #include <algorithm>
 #include <cmath>
 #include <vector>
+#include <queue>
 #include "test_framework/generic_test.h"
 #include "test_framework/serialization_traits.h"
 #include "test_framework/test_utils.h"
 using std::vector;
+using namespace std;
 
 struct Star {
   bool operator<(const Star& that) const {
@@ -19,8 +21,18 @@ struct Star {
 vector<Star> FindClosestKStars(vector<Star>::const_iterator stars_begin,
                                const vector<Star>::const_iterator& stars_end,
                                int k) {
-  // TODO - you fill in here.
-  return {};
+  vector<Star> ans;
+  priority_queue<Star, vector<Star>, less<>> max_heap;
+  while(stars_begin != stars_end){
+    max_heap.emplace(*stars_begin++);
+    if(max_heap.size() > k)
+      max_heap.pop();
+  }
+  while(!max_heap.empty()){
+    ans.emplace_back(max_heap.top());
+    max_heap.pop();
+  }
+  return ans;
 }
 template <>
 struct SerializationTraits<Star> : UserSerTraits<Star, double, double, double> {
