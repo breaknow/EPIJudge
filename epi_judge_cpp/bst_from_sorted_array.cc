@@ -7,28 +7,37 @@
 #include "test_framework/timed_executor.h"
 using std::unique_ptr;
 using std::vector;
+using namespace std;
 
-unique_ptr<BstNode<int>> BuildMinHeightBSTFromSortedArray(
-    const vector<int>& A) {
-  // TODO - you fill in here.
-  return nullptr;
+unique_ptr<BstNode<int>> dfs(const vector<int> &A, int st, int ed) {
+	if (st == ed)
+		return nullptr;
+	int mid = ed - (ed - st + 1) / 2;
+	auto temp = make_unique<BstNode<int>>(A[mid], nullptr, nullptr);
+	temp.get()->left = dfs(A, st, mid);
+	temp.get()->right = dfs(A, mid + 1, ed);
+	return temp;
+}
+
+unique_ptr<BstNode<int>> BuildMinHeightBSTFromSortedArray(const vector<int>& A) {
+	return dfs(A, 0, A.size());
 }
 int BuildMinHeightBSTFromSortedArrayWrapper(TimedExecutor& executor,
-                                            const vector<int>& A) {
-  unique_ptr<BstNode<int>> result =
-      executor.Run([&] { return BuildMinHeightBSTFromSortedArray(A); });
+	const vector<int>& A) {
+	unique_ptr<BstNode<int>> result =
+		executor.Run([&] { return BuildMinHeightBSTFromSortedArray(A); });
 
-  if (GenerateInorder(result) != A) {
-    throw TestFailure("Result binary tree mismatches input array");
-  }
-  return BinaryTreeHeight(result);
+	if (GenerateInorder(result) != A) {
+		throw TestFailure("Result binary tree mismatches input array");
+	}
+	return BinaryTreeHeight(result);
 }
 
 int main(int argc, char* argv[]) {
-  std::vector<std::string> args{argv + 1, argv + argc};
-  std::vector<std::string> param_names{"executor", "A"};
-  return GenericTestMain(args, "bst_from_sorted_array.cc",
-                         "bst_from_sorted_array.tsv",
-                         &BuildMinHeightBSTFromSortedArrayWrapper,
-                         DefaultComparator{}, param_names);
+	std::vector<std::string> args{ argv + 1, argv + argc };
+	std::vector<std::string> param_names{ "executor", "A" };
+	return GenericTestMain(args, "bst_from_sorted_array.cc",
+		"bst_from_sorted_array.tsv",
+		&BuildMinHeightBSTFromSortedArrayWrapper,
+		DefaultComparator{}, param_names);
 }

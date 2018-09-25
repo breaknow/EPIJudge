@@ -5,74 +5,101 @@
 using std::vector;
 
 struct Interval {
-  struct Endpoint {
-    bool is_closed;
-    int val;
-  };
+	struct Endpoint {
+		bool is_closed;
+		int val;
+	};
 
-  Endpoint left, right;
+	Endpoint left, right;
+	const bool operator < (const Interval &r) const {
+		if (this->left.val == r.left.val && left.is_closed == true && !r.left.is_closed)
+			return true;
+		return this->left.val < r.left.val;
+	}
 };
 
 vector<Interval> UnionOfIntervals(vector<Interval> intervals) {
-  // TODO - you fill in here.
-  return {};
+	std::sort(intervals.begin(), intervals.end());
+	vector<Interval> ans;
+	for (int i = 0; i < intervals.size(); i++) {
+		if (i == intervals.size() - 1) {
+			ans.emplace_back(intervals[i]);
+			break;
+		}
+		if ((intervals[i].right.val > intervals[i + 1].left.val) ||
+			(intervals[i].right.val == intervals[i + 1].left.val &&
+			(intervals[i].right.is_closed || intervals[i + 1].left.is_closed))) {
+			intervals[i + 1].left = intervals[i].left;
+
+			if ((intervals[i].right.val > intervals[i + 1].right.val) ||
+				(intervals[i].right.val == intervals[i + 1].right.val && intervals[i].right.is_closed)) {
+				intervals[i + 1].right = intervals[i].right;
+			}
+		}
+		else
+			ans.emplace_back(intervals[i]);
+	}
+	return ans;
 }
 struct FlatInterval {
-  int left_val;
-  bool left_is_closed;
-  int right_val;
-  bool right_is_closed;
+	int left_val;
+	bool left_is_closed;
+	int right_val;
+	bool right_is_closed;
 
-  FlatInterval(int left_val, bool left_is_closed, int right_val,
-               bool right_is_closed)
-      : left_val(left_val),
-        left_is_closed(left_is_closed),
-        right_val(right_val),
-        right_is_closed(right_is_closed) {}
+	FlatInterval(int left_val, bool left_is_closed, int right_val,
+		bool right_is_closed)
+		: left_val(left_val),
+		left_is_closed(left_is_closed),
+		right_val(right_val),
+		right_is_closed(right_is_closed) {
+	}
 
-  explicit FlatInterval(Interval in)
-      : left_val(in.left.val),
-        left_is_closed(in.left.is_closed),
-        right_val(in.right.val),
-        right_is_closed(in.right.is_closed) {}
+	explicit FlatInterval(Interval in)
+		: left_val(in.left.val),
+		left_is_closed(in.left.is_closed),
+		right_val(in.right.val),
+		right_is_closed(in.right.is_closed) {
+	}
 
-  operator Interval() const {
-    return {{left_is_closed, left_val}, {right_is_closed, right_val}};
-  }
+	operator Interval() const {
+		return { {left_is_closed, left_val}, {right_is_closed, right_val} };
+	}
 
-  bool operator==(const FlatInterval& rhs) const {
-    return std::tie(left_val, left_is_closed, right_val, right_is_closed) ==
-           std::tie(rhs.left_val, rhs.left_is_closed, rhs.right_val,
-                    rhs.right_is_closed);
-  }
+	bool operator==(const FlatInterval& rhs) const {
+		return std::tie(left_val, left_is_closed, right_val, right_is_closed) ==
+			std::tie(rhs.left_val, rhs.left_is_closed, rhs.right_val,
+				rhs.right_is_closed);
+	}
 };
 
 template <>
 struct SerializationTraits<FlatInterval>
-    : UserSerTraits<FlatInterval, int, bool, int, bool> {};
+	: UserSerTraits<FlatInterval, int, bool, int, bool> {
+};
 
 std::ostream& operator<<(std::ostream& out, const FlatInterval& i) {
-  return out << (i.left_is_closed ? '<' : '(') << i.left_val << ", "
-             << i.right_val << (i.right_is_closed ? '>' : ')');
+	return out << (i.left_is_closed ? '<' : '(') << i.left_val << ", "
+		<< i.right_val << (i.right_is_closed ? '>' : ')');
 }
 
 std::vector<FlatInterval> UnionOfIntervalsWrapper(
-    TimedExecutor& executor, const std::vector<FlatInterval>& intervals) {
-  std::vector<Interval> casted;
-  for (const FlatInterval& i : intervals) {
-    casted.push_back(static_cast<Interval>(i));
-  }
+	TimedExecutor& executor, const std::vector<FlatInterval>& intervals) {
+	std::vector<Interval> casted;
+	for (const FlatInterval& i : intervals) {
+		casted.push_back(static_cast<Interval>(i));
+	}
 
-  std::vector<Interval> result =
-      executor.Run([&] { return UnionOfIntervals(casted); });
+	std::vector<Interval> result =
+		executor.Run([&] { return UnionOfIntervals(casted); });
 
-  return {begin(result), end(result)};
+	return { begin(result), end(result) };
 }
 
 int main(int argc, char* argv[]) {
-  std::vector<std::string> args{argv + 1, argv + argc};
-  std::vector<std::string> param_names{"executor", "intervals"};
-  return GenericTestMain(args, "intervals_union.cc", "intervals_union.tsv",
-                         &UnionOfIntervalsWrapper, DefaultComparator{},
-                         param_names);
+	std::vector<std::string> args{ argv + 1, argv + argc };
+	std::vector<std::string> param_names{ "executor", "intervals" };
+	return GenericTestMain(args, "intervals_union.cc", "intervals_union.tsv",
+		&UnionOfIntervalsWrapper, DefaultComparator{},
+		param_names);
 }
