@@ -12,14 +12,14 @@ void dfs(int sum, int num_pairs, string &temp, vector<string> &ans) {
 	int remain = num_pairs * 2 - temp.length();
 	if (remain >= sum) {
 		if (sum > 0) {
-			temp += ')';
-			dfs(sum - 1, num_pairs, temp, ans);
-			temp.pop_back();
+			//temp += ')';
+			dfs(sum - 1, num_pairs, temp+')', ans);
+			//temp.pop_back();
 		}
 		if (remain > sum) {
-			temp += '(';
-			dfs(sum + 1, num_pairs, temp, ans);
-			temp.pop_back();
+			//temp += '(';
+			dfs(sum + 1, num_pairs, temp + '(', ans);
+			//temp.pop_back();
 		}
 	}
 }
